@@ -488,8 +488,9 @@ fn draw_inset_box_shadow_rounded_rect(
     //
     // 其中:
     // - outer_rect: base rect + padding(用于 offset/blur 覆盖).
-    // - inner_rect: 用来"扣掉中心",它的 inset 取 `blur + spread`,
-    //              让 spread=0 时仍然能看到纯 blur 的 inset shadow.
+    // - inner_rect: 用来"扣掉中心".
+    //   - inset 主要由 spread 控制(深度/厚度).
+    //   - blur 主要改变过渡带的柔和度(宽度),但不会再额外推动 inner_rect 向内收缩.
     // -----------------------------------------------------------------
     let min_edge = rect.width().min(rect.height());
     if min_edge <= 1.0 {
@@ -511,11 +512,16 @@ fn draw_inset_box_shadow_rounded_rect(
     let max_spread_neg = min_edge;
     let spread_radius_px = spread_radius_px.clamp(-max_spread_neg, max_spread_pos);
 
-    // 4) inner cutout 的 inset = blur + spread.
-    let inner_inset_px = blur_radius_px + spread_radius_px;
-    if inner_inset_px <= 0.0 {
-        return;
-    }
+    // 4) inner cutout 的 inset(决定"阴影吃进去多深").
+    //
+    // 你反馈的关键调参手感是:
+    // - `blur-radius`(Z/X) 更像"只改变柔和度",不要像 spread 一样显著改变阴影深度.
+    //
+    // 因此这里让 inset **只由 spread 控制**:
+    // - spread=0: inner_rect == base_rect,依然会得到"纯 blur"的 inset shadow.
+    // - spread>0: inner_rect 向内收缩,阴影更深.
+    // - spread<0: inner_rect 向外扩张,阴影更浅甚至消失(更贴近 CSS 负 spread 的直觉).
+    let inner_inset_px = spread_radius_px;
 
     let base_shape = RoundedRect::from_rect(rect, radius);
     let offset_rect = |r: Rect| {
@@ -536,7 +542,7 @@ fn draw_inset_box_shadow_rounded_rect(
     let outer_max_radius = 0.5 * outer_min_edge;
     let outer_radius = (radius + outer_pad).clamp(0.0, outer_max_radius);
 
-    // 6) inner cutout:
+    // 6) inner cutout(用来扣掉中心区域).
     let mut inner_rect = rect.inflate(-inner_inset_px, -inner_inset_px);
     if inner_rect.width() <= 1.0 || inner_rect.height() <= 1.0 {
         // 退化时折叠成中心 1x1,避免传入无效宽高.
@@ -545,7 +551,30 @@ fn draw_inset_box_shadow_rounded_rect(
     }
     let inner_min_edge = inner_rect.width().min(inner_rect.height());
     let inner_max_radius = 0.5 * inner_min_edge;
-    let inner_radius = (radius - inner_inset_px).clamp(0.0, inner_max_radius);
+
+    // ---------------------------------------------------------
+    // 关键手感修正(对应你反馈的"V 一增大,中心变矩形且拐角锐利"):
+    //
+    // 如果我们用"几何 inset"的直觉公式:
+    // - `inner_radius = radius - spread`
+    //
+    // 那当 spread 接近/超过 radius 时,inner_radius 会很快 clamp 到 0,
+    // 于是 inner cutout 就会退化成"直角矩形",你会明显看到:
+    // - 中心露出一个矩形洞,
+    // - 阴影的内边界拐角很尖锐.
+    //
+    // 但你要的是更像 CSS 的调参手感:
+    // - spread 主要控制"深度/厚度",
+    // - 而拐角不要因为 spread 立刻变得更尖锐.
+    //
+    // 因此这里让 inner cutout 的圆角半径保持跟外轮廓一致(并按尺寸上限 clamp):
+    // - 这样 V 主要改变 inner_rect 的位置(深度),不会把圆角半径直接扣到 0.
+    //
+    // 备注:
+    // - 你给的 shadertoy "Rounded Box - exact" SDF 公式,本质也是在 corner 处提供更合理的距离度量.
+    // - 我们这里没有直接引入 SDF depth mask,而是用更小的改动达到"拐角更圆润"的目标.
+    // ---------------------------------------------------------
+    let inner_radius = radius.clamp(0.0, inner_max_radius);
 
     // 7) 外层 layer: 合成方式等价于 CSS 的正常 alpha blending.
     let blend = BlendMode::new(Mix::Normal, Compose::SrcOver);
@@ -562,6 +591,13 @@ fn draw_inset_box_shadow_rounded_rect(
     );
 
     // 7.2 inner blur: 用 DestOut 扣洞,清空中心.
+    //
+    // 关键点:
+    // - `Compose::DestOut` 只看 src 的 alpha.
+    // - 如果我们用 `shadow_color`(alpha=opacity) 来扣洞,那么中心最多只能扣掉 opacity,
+    //   会留下一个半透明的"中心矩形残影"(你反馈的那个现象).
+    // - 因此这里用一个 alpha=1 的不透明 mask 来做 cutout,确保中心真正被清空.
+    let cutout_mask = Color::new([0.0, 0.0, 0.0, 1.0]);
     scene.push_layer(
         Fill::NonZero,
         Compose::DestOut,
@@ -573,7 +609,7 @@ fn draw_inset_box_shadow_rounded_rect(
         &base_shape,
         Affine::IDENTITY,
         offset_rect(inner_rect),
-        shadow_color,
+        cutout_mask,
         inner_radius,
         std_dev,
     );
