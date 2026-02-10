@@ -1,6 +1,6 @@
 [package]
 name = "vello_hybrid"
-version = "0.0.5"
+version = "0.0.6"
 description = "A hybrid CPU/GPU renderer for Vello, balancing computation between CPU and GPU for efficiency."
 categories = ["rendering", "graphics"]
 keywords = ["2d", "vector-graphics"]
@@ -11,9 +11,8 @@ repository.workspace = true
 
 [package.metadata.docs.rs]
 all-features = true
-# There are no platform specific docs.
 default-target = "x86_64-unknown-linux-gnu"
-targets = []
+targets = ["wasm32-unknown-unknown"]
 
 [dependencies]
 bytemuck = { workspace = true, features = ["derive"] }
@@ -24,6 +23,7 @@ vello_sparse_shaders = { workspace = true, optional = true }
 log = { workspace = true }
 guillotiere = "0.6.2"
 hashbrown = { workspace = true }
+vello_api = { workspace = true, features = ["std"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 js-sys = { version = "0.3.83", optional = true }

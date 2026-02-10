@@ -141,8 +141,8 @@ impl MultiThreadedDispatcher {
         let mut dispatcher = Self {
             wide,
             thread_pool,
-            allocations: Default::default(),
-            allocation_group: Default::default(),
+            allocations: Allocations::default(),
+            allocation_group: AllocationGroup::default(),
             batch_cost,
             task_idx,
             flushed,
@@ -602,6 +602,22 @@ impl Dispatcher for MultiThreadedDispatcher {
                 self.rasterize_f32(buffer, width, height, encoded_paints);
             }
         }
+    }
+
+    fn composite_at_offset(
+        &self,
+        _buffer: &mut [u8],
+        _width: u16,
+        _height: u16,
+        _dst_x: u16,
+        _dst_y: u16,
+        _dst_buffer_width: u16,
+        _dst_buffer_height: u16,
+        _render_mode: RenderMode,
+        _encoded_paints: &[EncodedPaint],
+    ) {
+        // TODO: Implement composite_at_offset for multi-threaded dispatcher.
+        unimplemented!("composite_at_offset is not implemented for multi-threaded dispatcher");
     }
 
     fn generate_wide_cmd(
