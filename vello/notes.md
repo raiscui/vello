@@ -18,3 +18,17 @@
   - 如果 cutout 也用 `shadow_color(alpha=opacity)`,中心最多只能扣掉 `opacity`,
     就会留下半透明残影(看起来像一块矩形"脏"在中间).
 - 修复策略: cutout 用 `alpha=1` 的不透明 mask 来扣洞,shadow 的 opacity 只用于 outer blur.
+
+### 2026-02-10 23:57:47
+
+- 当前分支: `main`
+- 与 `origin/main` 的关系: `ahead 2, behind 44`
+- 目标: 合并 `origin/main` 到本地 `main`,保留本地 2 个提交.
+
+### 2026-02-11 00:01:39
+
+- 合并完成:
+  - merge commit: `76f5771f`
+  - `main` 相对 `origin/main`: `ahead 3, behind 0`
+- 备份分支:
+  - `backup/main-before-merge-20260210-235747` 指向合并前的 `main`

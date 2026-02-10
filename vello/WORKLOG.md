@@ -50,3 +50,28 @@
 
 - `cargo fmt` ✅
 - `cargo test -p inner_shadow` ✅
+
+## 2026-02-11 00:01:39: 合并 `origin/main` 到本地 `main`
+
+### 背景
+
+- 合并前分支状态: `main...origin/main [ahead 2, behind 44]`
+- 目标: 同步上游 44 个提交,同时保留本地 2 个提交.
+
+### 执行
+
+- 更新远端引用:
+  - `git fetch origin`
+- 创建回滚点(备份分支):
+  - `git branch backup/main-before-merge-20260210-235747`
+- 执行合并:
+  - `git merge --no-edit origin/main`
+
+### 结果
+
+- 合并提交: `76f5771f`
+- 合并后分支状态: `main...origin/main [ahead 3, behind 0]`
+
+### 验证
+
+- `cargo test -p inner_shadow` ✅

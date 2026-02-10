@@ -53,3 +53,31 @@
 - 回归验证:
   - `cargo fmt` ✅
   - `cargo test -p inner_shadow` ✅
+
+### 2026-02-10 23:57:47
+
+- 我正在把 `origin/main` 合并到本地 `main`.
+- 我这样做的原因是:
+  - 当前 `main` 相对 `origin/main` 处于 `ahead 2, behind 44` 状态.
+  - 需要把上游 44 个提交合并进来,同时保留本地 2 个提交.
+- 我采用的方案是(已决定):
+  - 使用 `git merge origin/main` 的合并策略,保留 merge commit,不做 rebase.
+  - 合并前创建一个本地备份分支,确保随时可回滚.
+- 我接下来要做的是:
+  - `git fetch origin` 更新远端引用.
+  - 创建备份分支 `backup/main-before-merge-20260210-235747`.
+  - 执行 merge,如有冲突逐个解决并完成提交.
+  - 合并后做最小验证,优先跑与本地改动直接相关的测试.
+
+### 2026-02-11 00:01:39
+
+- 我已经完成了 `origin/main` -> `main` 的合并.
+- 我实际执行的动作是:
+  - `git fetch origin`
+  - `git branch backup/main-before-merge-20260210-235747`
+  - `git merge --no-edit origin/main`
+- 合并结果:
+  - 当前 merge commit 为 `76f5771f`
+  - `main` 相对 `origin/main` 为 `ahead 3, behind 0`
+- 回归验证:
+  - `cargo test -p inner_shadow` ✅
