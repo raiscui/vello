@@ -1606,6 +1606,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "inner_shadow"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "pollster",
+ "vello",
+ "winit",
+]
+
+[[package]]
 name = "inotify"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

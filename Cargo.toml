@@ -8,6 +8,7 @@ members = [
     "xtask",
 
     "examples/headless",
+    "examples/inner_shadow",
     "examples/run_wasm",
     "examples/scenes",
     "examples/simple",

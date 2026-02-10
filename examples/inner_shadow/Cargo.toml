@@ -1,0 +1,16 @@
+[package]
+name = "inner_shadow"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+# 这里的依赖版本刻意不走 workspace,以便这个示例可以被单独拷贝出去运行.
+[dependencies]
+vello = { version = "0.7.0", path = "../../vello" }
+anyhow = "1.0.100"
+pollster = "0.4.0"
+winit = "0.30.12"
