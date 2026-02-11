@@ -66,12 +66,14 @@ struct InsetBoxShadowParams {
 impl Default for InsetBoxShadowParams {
     fn default() -> Self {
         Self {
-            offset_x: 8.0,
-            offset_y: 8.0,
-            blur_radius: 12.0,
-            spread_radius: 0.0,
-            opacity: 0.35,
-            // 按钮 Md 的默认圆角是 8px,这里用它做默认值,方便你直接调按钮内阴影手感.
+            // 默认值采用你确认的"按钮内阴影基准"参数,便于复现与继续调参:
+            // - box-shadow: inset 0px 4px 23px 2px rgba(0,0,0,0.46);
+            // - border-radius: 8px
+            offset_x: 0.0,
+            offset_y: 4.0,
+            blur_radius: 23.0,
+            spread_radius: 2.0,
+            opacity: 0.46,
             corner_radius: 8.0,
         }
     }

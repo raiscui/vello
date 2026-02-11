@@ -122,3 +122,31 @@
   - 结果 rustfmt 对 `examples/inner_shadow/src/main.rs` 做了小幅折行调整,如果不提交会反复产生噪声 diff.
 - 处置:
   - 我已把该格式化改动一并提交.
+
+### 2026-02-11 12:58:08
+
+- 我正在把 `examples/inner_shadow` 的默认参数改成你刚才在窗口标题里确认的那组值.
+- 我这样做的原因是:
+  - 你已经通过实际观感找到了"按钮最佳内阴影"的基准参数.
+  - 把它设为默认值,能让后续调参/对照更快进入状态,也便于截图/复现.
+
+- 这次要设为默认值的参数是:
+  - offset-x: 0
+  - offset-y: 4
+  - blur-radius: 23
+  - spread-radius: 2
+  - opacity: 0.46
+  - border-radius: 8
+
+- 我接下来要做的是:
+  - 修改 `examples/inner_shadow/src/main.rs` 里的 `InsetBoxShadowParams::default()`.
+  - 运行 `(cd vello && cargo test -p inner_shadow)` 验证.
+
+### 2026-02-11 12:58:51
+
+- 我已经把你给的这组参数设成默认值.
+- 改动位置:
+  - `examples/inner_shadow/src/main.rs` -> `InsetBoxShadowParams::default()`.
+- 回归验证:
+  - `(cd vello && cargo fmt)` ✅
+  - `(cd vello && cargo test -p inner_shadow)` ✅

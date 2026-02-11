@@ -107,3 +107,27 @@
 - 我补跑了 `(cd vello && cargo fmt)`.
 - rustfmt 对 `examples/inner_shadow/src/main.rs` 的函数调用做了小幅折行调整.
 - 该变更已提交,避免后续反复出现格式化噪声 diff.
+
+## 2026-02-11 12:58:51: inner_shadow 默认参数改为按钮内阴影基准值
+
+### 需求
+
+- 你在窗口标题里确认了当前最佳手感参数:
+  - box-shadow: inset 0px 4px 23px 2px rgba(0,0,0,0.46);
+  - border-radius: 8px
+- 你希望把它作为示例默认值,方便后续调参/复现.
+
+### 实施
+
+- 修改 `examples/inner_shadow/src/main.rs` 的 `InsetBoxShadowParams::default()`:
+  - offset-x: 0
+  - offset-y: 4
+  - blur-radius: 23
+  - spread-radius: 2
+  - opacity: 0.46
+  - border-radius: 8
+
+### 验证
+
+- `(cd vello && cargo fmt)` ✅
+- `(cd vello && cargo test -p inner_shadow)` ✅
