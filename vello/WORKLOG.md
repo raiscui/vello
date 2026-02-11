@@ -75,3 +75,29 @@
 ### 验证
 
 - `cargo test -p inner_shadow` ✅
+
+## 2026-02-11 12:44:01: inner_shadow 增加按钮 Md(108x36,r=8)固定样本,用于调按钮内阴影
+
+### 目标
+
+- 你给了 `ButtonSize::Md` 的真实像素(108x36,r=8).
+- 我需要把它落到 `examples/inner_shadow` 里.
+- 这样你在按键调 offset/blur/spread/opacity 时,能直接看到按钮尺寸下的手感.
+
+### 实施
+
+- 修改 `examples/inner_shadow/src/main.rs`
+  - 默认 `corner_radius` 从 28 调整为 8,更贴近按钮 Md 默认圆角.
+  - 场景里同时绘制两份样本:
+    1) 自适应大面板(原示例).
+    2) 按钮 Md 固定尺寸样本(108x36).
+  - 新增 `compute_button_md_rounded_rect` 计算按钮样本的位置.
+    - 优先放在大面板上方.
+    - 上方放不下就放下方.
+    - 仍放不下就贴顶留 margin.
+  - 抽出 `draw_inset_shadow_sample`,复用"填充/描边/内阴影"绘制逻辑.
+
+### 验证
+
+- `cargo fmt` ✅
+- `(cd vello && cargo test -p inner_shadow)` ✅

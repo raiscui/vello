@@ -71,7 +71,8 @@ impl Default for InsetBoxShadowParams {
             blur_radius: 12.0,
             spread_radius: 0.0,
             opacity: 0.35,
-            corner_radius: 28.0,
+            // 按钮 Md 的默认圆角是 8px,这里用它做默认值,方便你直接调按钮内阴影手感.
+            corner_radius: 8.0,
         }
     }
 }
@@ -392,34 +393,76 @@ fn build_scene_inset_box_shadow(
     height: u32,
     params: &InsetBoxShadowParams,
 ) {
-    let (base_rect, base_shape, radius) =
+    // -------------------------------------------------------------
+    // 两个样本:
+    // 1) 自适应大面板(原示例).
+    // 2) 固定按钮 Md 尺寸(108x36,r=8),用于调按钮内阴影.
+    // -------------------------------------------------------------
+    let (panel_rect, panel_shape, panel_radius) =
         compute_centered_rounded_rect(width, height, params.corner_radius);
-
-    // 1) 画底色(按钮面).
-    let face_color = Color::new([0.00, 0.48, 1.00, 1.0]);
-    scene.fill(
-        Fill::NonZero,
-        Affine::IDENTITY,
-        face_color,
-        None,
-        &base_shape,
+    let (button_rect, button_shape, button_radius) = compute_button_md_rounded_rect(
+        width,
+        height,
+        panel_rect,
+        params.corner_radius,
     );
 
-    // 2) 轻微描边,帮助观察边界.
+    // 面色/描边色保持一致,这样你能更直接对照不同尺寸下的阴影手感差异.
+    let face_color = Color::new([0.00, 0.48, 1.00, 1.0]);
     let border_color = Color::new([0.35, 0.40, 0.48, 1.0]);
+
+    // 1) 先画大面板.
+    draw_inset_shadow_sample(
+        scene,
+        panel_rect,
+        panel_shape,
+        panel_radius,
+        1.5,
+        face_color,
+        border_color,
+        params,
+    );
+
+    // 2) 再画按钮 Md 样本(放在大面板上下方,尽量避免重叠).
+    draw_inset_shadow_sample(
+        scene,
+        button_rect,
+        button_shape,
+        button_radius,
+        1.0,
+        face_color,
+        border_color,
+        params,
+    );
+}
+
+fn draw_inset_shadow_sample(
+    scene: &mut Scene,
+    rect: Rect,
+    shape: RoundedRect,
+    radius: f64,
+    border_width_px: f64,
+    face_color: Color,
+    border_color: Color,
+    params: &InsetBoxShadowParams,
+) {
+    // 1) 画底色(按钮面).
+    scene.fill(Fill::NonZero, Affine::IDENTITY, face_color, None, &shape);
+
+    // 2) 描边,帮助观察边界.
     scene.stroke(
-        &Stroke::new(1.5),
+        &Stroke::new(border_width_px),
         Affine::IDENTITY,
         border_color,
         None,
-        &base_shape,
+        &shape,
     );
 
     // 3) inset box-shadow(内阴影).
     let shadow_color = Color::new([0.0, 0.0, 0.0, params.opacity]);
     draw_inset_box_shadow_rounded_rect(
         scene,
-        base_rect,
+        rect,
         radius,
         shadow_color,
         Vec2::new(params.offset_x, params.offset_y),
@@ -455,6 +498,57 @@ fn compute_centered_rounded_rect(
     let base_shape = RoundedRect::new(x0, y0, x1, y1, radius);
 
     (base_rect, base_shape, radius)
+}
+
+fn compute_button_md_rounded_rect(
+    width: u32,
+    height: u32,
+    panel_rect: Rect,
+    corner_radius: f64,
+) -> (Rect, RoundedRect, f64) {
+    // ---------------------------------------------------------------------
+    // ButtonSize::Md(来自主工程按钮规格):
+    // - height_px: 36
+    // - min_width_px: 108
+    // - corner_radius_px: 8
+    // - border_width_px: 1
+    //
+    // 说明:
+    // - 这里的样本目标是"真实按钮尺寸",方便你调 inset shadow 的最佳参数.
+    // - 布局策略: 尽量放在大面板上方,放不下就放下方,再不行就贴顶边留 margin.
+    // ---------------------------------------------------------------------
+    let w = width as f64;
+    let h = height as f64;
+
+    let button_w = 108.0;
+    let button_h = 36.0;
+
+    let gap = 32.0;
+    let margin = 24.0;
+
+    // 水平居中.
+    let x0 = ((w - button_w) * 0.5).round();
+    let x1 = (x0 + button_w).round();
+
+    // 尝试放到大面板上方.
+    let mut y0 = panel_rect.y0 - gap - button_h;
+    if y0 < margin {
+        // 上方放不下就放下方.
+        y0 = panel_rect.y1 + gap;
+        if y0 + button_h > h - margin {
+            // 下方也放不下就退化为贴顶,保证窗口变小时仍能看到按钮样本.
+            y0 = margin;
+        }
+    }
+    let y0 = y0.round();
+    let y1 = (y0 + button_h).round();
+
+    let rect = Rect::new(x0, y0, x1, y1);
+    let max_radius = 0.5 * rect.width().min(rect.height());
+    let radius = corner_radius.clamp(0.0, max_radius);
+    let shape = RoundedRect::new(rect.x0, rect.y0, rect.x1, rect.y1, radius);
+
+    (rect, shape, radius)
 }
 
 // -----------------------------------------------------------------------------

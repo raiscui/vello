@@ -81,3 +81,35 @@
   - `main` 相对 `origin/main` 为 `ahead 3, behind 0`
 - 回归验证:
   - `cargo test -p inner_shadow` ✅
+
+### 2026-02-11 12:38:12
+
+- 我正在给 `examples/inner_shadow` 增加一个"按钮 Md(108x36,r=8)"的固定样本.
+- 我这样做的原因是:
+  - 当前示例的主形状会随窗口自适应,不便于直接对齐实际按钮尺寸.
+  - 你给了 `ButtonSize::Md` 的具体像素,我需要在示例里做 1:1 对照,才能更快调出"按钮最佳内阴影"参数.
+
+- 方案A(不惜代价,最佳方案):
+  - 增加 `SampleMode`,支持在"自适应大面板/按钮Md/同时显示"之间切换.
+  - 并把当前 mode 显示在窗口标题里,避免调参时忘记自己在看哪个样本.
+
+- 方案B(先能用,后面再优雅)(本次采用):
+  - 保留现有自适应大面板.
+  - 额外绘制一个 108x36 的按钮样本(同一套 shadow 参数),用于实时对照调参.
+  - 按窗口空间自动把按钮样本放在大面板的上方或下方,尽量避免重叠.
+
+- 我接下来要做的是:
+  - 修改 `examples/inner_shadow/src/main.rs`,抽 helper 复用"填充/描边/内阴影"绘制逻辑.
+  - 跑 `cargo fmt` + `cargo test -p inner_shadow` 做回归验证.
+
+### 2026-02-11 12:44:01
+
+- 我已经完成了"按钮 Md(108x36,r=8)"样本的加入.
+- 我做的改动是:
+  - `examples/inner_shadow/src/main.rs`:
+    - 默认 `corner_radius` 调整为 8px(更贴近按钮 Md 默认圆角).
+    - 新增 `compute_button_md_rounded_rect`,在场景里额外绘制一个按钮 Md 尺寸样本.
+    - 抽出 `draw_inset_shadow_sample`,复用"填充/描边/内阴影"绘制逻辑.
+- 回归验证:
+  - `cargo fmt` ✅
+  - `(cd vello && cargo test -p inner_shadow)` ✅
