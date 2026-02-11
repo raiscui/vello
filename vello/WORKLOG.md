@@ -101,3 +101,9 @@
 
 - `cargo fmt` ✅
 - `(cd vello && cargo test -p inner_shadow)` ✅
+
+## 2026-02-11 12:51:03: 补充: vello workspace rustfmt 折行调整已提交
+
+- 我补跑了 `(cd vello && cargo fmt)`.
+- rustfmt 对 `examples/inner_shadow/src/main.rs` 的函数调用做了小幅折行调整.
+- 该变更已提交,避免后续反复出现格式化噪声 diff.

@@ -113,3 +113,12 @@
 - 回归验证:
   - `cargo fmt` ✅
   - `(cd vello && cargo test -p inner_shadow)` ✅
+
+### 2026-02-11 12:51:03
+
+- 补充: 我在 vello workspace 内执行了 `(cd vello && cargo fmt)`.
+- 我这样做的原因是:
+  - 之前我只在主仓库根目录跑过 `cargo fmt`,它不会覆盖 submodule(vello) 内的 crate.
+  - 结果 rustfmt 对 `examples/inner_shadow/src/main.rs` 做了小幅折行调整,如果不提交会反复产生噪声 diff.
+- 处置:
+  - 我已把该格式化改动一并提交.

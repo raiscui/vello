@@ -400,12 +400,8 @@ fn build_scene_inset_box_shadow(
     // -------------------------------------------------------------
     let (panel_rect, panel_shape, panel_radius) =
         compute_centered_rounded_rect(width, height, params.corner_radius);
-    let (button_rect, button_shape, button_radius) = compute_button_md_rounded_rect(
-        width,
-        height,
-        panel_rect,
-        params.corner_radius,
-    );
+    let (button_rect, button_shape, button_radius) =
+        compute_button_md_rounded_rect(width, height, panel_rect, params.corner_radius);
 
     // 面色/描边色保持一致,这样你能更直接对照不同尺寸下的阴影手感差异.
     let face_color = Color::new([0.00, 0.48, 1.00, 1.0]);
