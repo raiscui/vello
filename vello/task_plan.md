@@ -150,3 +150,18 @@
 - 回归验证:
   - `(cd vello && cargo fmt)` ✅
   - `(cd vello && cargo test -p inner_shadow)` ✅
+
+### 2026-02-11 13:10:10
+
+- 我正在修复 vello submodule 的"commit 不可达"风险.
+- 我这样做的原因是:
+  - 之前 push 到 `https://github.com/raiscui/vello.git` 返回 403,服务端显示鉴权账号是 `lishaozhenzhen`.
+  - 你确认目前实际使用的是 `raiscui` 账号,说明本地凭据/推送方式不匹配.
+  - 同时,主仓库 `.gitmodules` 里 `vello` 仍指向 `linebender/vello`,但 gitlink 已是我们 fork 上的 commit,这会导致其他机器 `git submodule update` 失败.
+
+- 我做的处置是:
+  1) 在 vello submodule 内把 remote `my` 的 push url 改为 SSH(`git@github.com:raiscui/vello.git`),并成功推送 `main`.
+  2) 在主仓库把 `.gitmodules` 的 `submodule.vello.url` 从 `linebender/vello` 改为 `raiscui/vello`,并执行 `git submodule sync -- vello`.
+
+- 预期效果:
+  - 其他机器 clone 后,`git submodule update --init --recursive` 会从 `raiscui/vello` 拉取到当前 gitlink 指向的 commit.

@@ -131,3 +131,33 @@
 
 - `(cd vello && cargo fmt)` ✅
 - `(cd vello && cargo test -p inner_shadow)` ✅
+
+## 2026-02-11 13:10:10: 修复 vello submodule gitlink 不可达风险(账号/remote url 对齐)
+
+### 现象
+
+- push 到 `https://github.com/raiscui/vello.git` 报 403.
+- GitHub 返回: "Permission to raiscui/vello.git denied to lishaozhenzhen".
+- 同时主仓库 `.gitmodules` 里 `vello` 仍指向 `linebender/vello`,但当前 gitlink 已指向 fork commit.
+
+### 根因
+
+- 本机 HTTPS 凭据对应的鉴权账号不是你当前要用的 `raiscui`.
+- `.gitmodules` 的 `vello` URL 与实际需要 checkout 的 commit 来源不一致,导致其他机器无法 fetch 到该 commit.
+
+### 修复
+
+1) 推送方式对齐到 `raiscui`
+- 在 vello submodule 内将 remote `my` 的 push url 改为 SSH:
+  - `git remote set-url --push my git@github.com:raiscui/vello.git`
+- 然后成功推送:
+  - `git push my main`
+
+2) submodule URL 对齐
+- 在主仓库把 `.gitmodules` 的 vello url 改为 `https://github.com/raiscui/vello.git`.
+- 执行 `git submodule sync -- vello`,确保本地 submodule 配置与 `.gitmodules` 一致.
+
+### 结果
+
+- 当前 gitlink 对应的 vello commit 已在 `raiscui/vello` 可达.
+- 其他机器执行 `git submodule update --init --recursive` 不会再因为 `not our ref` 卡住.
