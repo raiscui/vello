@@ -165,3 +165,12 @@
 
 - 预期效果:
   - 其他机器 clone 后,`git submodule update --init --recursive` 会从 `raiscui/vello` 拉取到当前 gitlink 指向的 commit.
+
+### 2026-02-11 15:13:14
+
+- 你确认: vello example 不需要处理 HiDPI/scale_factor,按 1.0 理解即可.
+- 我这样做的原因是:
+  - 上层 `iced_emg` framework 已经把 HiDPI 处理好.
+  - `examples/inner_shadow` 只是调参对照用例,不需要额外引入逻辑 px/物理 px 的映射复杂度.
+- 我做的处置是:
+  - 在 `vello/vello/LATER_PLANS.md` 追加记录: 后续不再推进该示例的 HiDPI 改造.

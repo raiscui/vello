@@ -161,3 +161,9 @@
 
 - 当前 gitlink 对应的 vello commit 已在 `raiscui/vello` 可达.
 - 其他机器执行 `git submodule update --init --recursive` 不会再因为 `not our ref` 卡住.
+
+## 2026-02-11 15:13:14: 决策确认: inner_shadow 示例不推进 HiDPI/scale_factor
+
+- 你确认该 vello 示例按 1.0 scale_factor 理解即可.
+- 上层 `iced_emg` framework 已处理 HiDPI,因此示例层面不再做逻辑 px/物理 px 映射.
+- 我已把该决策追加到 `vello/vello/LATER_PLANS.md`,避免后续我自己或别人重复提起这个改造点.
